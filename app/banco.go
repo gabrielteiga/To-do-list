@@ -35,5 +35,5 @@ func (b *Banco) GetProjectById(id int) (Project, error) {
 			return project, nil
 		}
 	}
-	return *NewProject(0, "", ""), nil // Realizar um tratamento de erro.
+	return *NewProject(0, "", ""), nil
 }
