@@ -24,7 +24,7 @@ func NewProject(id int, title string, description string) *Project {
 }
 
 func (p *Project) AddTask(task Task) {
-	p.Tasks[task.Id] = task // BUG - Não funciona
+	p.Tasks[task.Id] = task
 }
 
 func (p *Project) RemoveTask(task Task) {
@@ -50,7 +50,7 @@ func (p *Project) PrintTasks() {
 		fmt.Printf("Description: %s\n", task.Description)
 		fmt.Println("Completed? ", task.IsCompleted)
 		fmt.Printf("Deadline (YYYY-MM-DD): %d-%d-%d\n", task.DueDate.Year(), task.DueDate.Month(), task.DueDate.Day())
-		fmt.Printf("-------------------------------\n\n")
+		fmt.Printf("-------------------------------\n")
 	}
 }
 

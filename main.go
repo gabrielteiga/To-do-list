@@ -38,12 +38,11 @@ func main() {
 			fmt.Println("\nTask created!")
 		case 3:
 			var projectId int
-			fmt.Println("Digit the project Id: ")
+			fmt.Print("Digit the project ID: ")
 			fmt.Scanln(&projectId)
 			project, _ := BancoDeDados.GetProjectById(projectId)
 
 			project.PrintTasks()
-			fmt.Println("List all tasks of a project")
 		case 4:
 			fmt.Println("Complete a task")
 		case 5:
@@ -53,8 +52,9 @@ func main() {
 			fmt.Println("Invalid option")
 		}
 
-		fmt.Printf("\n\nPress enter to continue...")
+		fmt.Printf("\nPress enter to continue...")
 		fmt.Scanln()
+		fmt.Print("\n\n\n\n")
 	}
 }
 
@@ -72,7 +72,7 @@ func getNewProjectData() (string, string) {
 	var description string
 
 	fmt.Print("Title: ")
-	fmt.Scanln(&title) //BUG: titulos com espaço contam como outras entradas.
+	fmt.Scanln(&title)
 
 	fmt.Print("Description: ")
 	fmt.Scanln(&description)
