@@ -1,7 +1,10 @@
 package app
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 )
 
@@ -43,7 +46,40 @@ func (p *Project) GetTasks() []Task {
 	return tasks
 }
 
-func (p *Project) PrintTasks() {
+func (p *Project) ShowMenu() {
+	for {
+		var option int
+
+		fmt.Printf("\n----------- %s -----------\n", p.Title)
+		p.printTasks()
+		fmt.Println("1. Mark a task as completed")
+		fmt.Println("2. Exit")
+		fmt.Print("Choose an option: ")
+
+		scanner := bufio.NewScanner(os.Stdin)
+		scanner.Scan()
+		option, _ = strconv.Atoi(scanner.Text())
+
+		switch option {
+		case 1:
+			var idTask int
+
+			fmt.Print("Digit the task ID: ")
+			scanner.Scan()
+			idTask, _ = strconv.Atoi(scanner.Text())
+
+			task := p.GetTask(idTask)
+			p.CompleteTask(task)
+		case 2:
+			return
+		default:
+			fmt.Println("Invalid option")
+		}
+	}
+
+}
+
+func (p *Project) printTasks() {
 	for _, task := range p.Tasks {
 		fmt.Printf("\n----------- Task %d -----------\n", task.Id)
 		fmt.Printf("Title: %s\n", task.Title)

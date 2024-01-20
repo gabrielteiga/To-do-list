@@ -48,10 +48,8 @@ func main() {
 			projectId, _ = strconv.Atoi(scanner.Text())
 			project, _ := Database.GetProjectById(projectId)
 
-			project.PrintTasks()
+			project.ShowMenu()
 		case 4:
-			fmt.Println("Complete a task")
-		case 5:
 			fmt.Println("Exit")
 			return
 		default:
@@ -67,9 +65,8 @@ func main() {
 func ShowMenu() {
 	fmt.Println("1. Create a new project")
 	fmt.Println("2. Create a new task")
-	fmt.Println("3. List all tasks of a project")
-	fmt.Println("4. Mark a task as completed")
-	fmt.Println("5. Exit")
+	fmt.Println("3. Select a project")
+	fmt.Println("4. Exit")
 	fmt.Print("Choose an option: ")
 }
 
