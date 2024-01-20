@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/gabrielteiga/kanban/app"
+	"github.com/gabrielteiga/to-do-list/app"
 )
 
 func main() {
