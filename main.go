@@ -1,20 +1,23 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strconv"
 	"time"
 
 	"github.com/gabrielteiga/kanban/app"
 )
 
 func main() {
-	BancoDeDados := app.NewBanco()
+	Database := app.NewBanco()
 	projectId := 1
 	taskId := 1
 	fmt.Println("Welcome to Kanban!")
 
 	for {
-		BancoDeDados.PrintAllProjects()
+		Database.PrintAllProjects()
 		ShowMenu()
 
 		var option int
@@ -24,23 +27,26 @@ func main() {
 		case 1:
 			title, description := getNewProjectData()
 			project := app.NewProject(projectId, title, description)
-			BancoDeDados.AddProject(*project)
+			Database.AddProject(*project)
 
 			projectId++
 			fmt.Println("\nProject created!")
 		case 2:
 			title, description, dueDate, idProject := getNewTaskData()
 			task := app.NewTask(taskId, title, description, dueDate, idProject)
-			project, _ := BancoDeDados.GetProjectById(idProject)
+			project, _ := Database.GetProjectById(idProject)
 			project.AddTask(*task)
 
 			taskId++
 			fmt.Println("\nTask created!")
 		case 3:
 			var projectId int
+
 			fmt.Print("Digit the project ID: ")
-			fmt.Scanln(&projectId)
-			project, _ := BancoDeDados.GetProjectById(projectId)
+			scanner := bufio.NewScanner(os.Stdin)
+			scanner.Scan()
+			projectId, _ = strconv.Atoi(scanner.Text())
+			project, _ := Database.GetProjectById(projectId)
 
 			project.PrintTasks()
 		case 4:
@@ -70,12 +76,15 @@ func ShowMenu() {
 func getNewProjectData() (string, string) {
 	var title string
 	var description string
+	scanner := bufio.NewScanner(os.Stdin)
 
 	fmt.Print("Title: ")
-	fmt.Scanln(&title)
+	scanner.Scan()
+	title = scanner.Text()
 
 	fmt.Print("Description: ")
-	fmt.Scanln(&description)
+	scanner.Scan()
+	description = scanner.Text()
 
 	return title, description
 }
@@ -83,18 +92,23 @@ func getNewProjectData() (string, string) {
 func getNewTaskData() (string, string, time.Time, int) {
 	var title, description, dueDateString string
 	var idProject int
+	scanner := bufio.NewScanner(os.Stdin)
 
-	fmt.Print("What's the project ID of this task? ")
-	fmt.Scanln(&idProject)
+	fmt.Print("Digit the project ID: ")
+	scanner.Scan()
+	idProject, _ = strconv.Atoi(scanner.Text())
 
 	fmt.Print("Title: ")
-	fmt.Scanln(&title)
+	scanner.Scan()
+	title = scanner.Text()
 
 	fmt.Print("Description: ")
-	fmt.Scanln(&description)
+	scanner.Scan()
+	description = scanner.Text()
 
 	fmt.Print("Due date (YYYY-MM-DD): ")
-	fmt.Scanln(&dueDateString)
+	scanner.Scan()
+	dueDateString = scanner.Text()
 	dueDate, _ := parseStringToDate(dueDateString)
 
 	return title, description, dueDate, idProject
