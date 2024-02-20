@@ -8,3 +8,4 @@ sql:
       go:
         package: "db_todo"
         out: "internal/db_todo"
+        sql_package: "pgx/v5"
