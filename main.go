@@ -2,22 +2,52 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"fmt"
+	"log"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/gabrielteiga/to-do-list/app"
+	"github.com/gabrielteiga/to-do-list/internal/db_todo"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
+	_ "github.com/lib/pq"
+)
+
+const (
+	user     = "sqlcgabrielteiga"
+	password = "123abc"
+	dbname   = "sqlc"
+	sslmode  = "disable"
+	port     = 5432
 )
 
 func main() {
-	Database := app.NewBanco()
-	projectId := 1
-	taskId := 1
-	fmt.Println("Welcome to Kanban!")
+	ctx := context.Background()
 
+	connStr := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=%s port=%d", user, password, dbname, sslmode, port)
+	dbcon, err := pgx.Connect(ctx, connStr)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer dbcon.Close(ctx)
+
+	err = executeSchema(dbcon, "sql/schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	dt := db_todo.New(dbcon)
+
+	fmt.Printf("----- Welcome to Kanban! -----\n\n")
 	for {
-		Database.PrintAllProjects()
+		projects, _ := dt.GetProjects(ctx)
+		for _, project := range projects {
+			fmt.Printf("PROJECT ID: %d - %s\n", project.ID, project.Title)
+		}
+
+		fmt.Println("")
 		ShowMenu()
 
 		var option int
@@ -26,32 +56,39 @@ func main() {
 		switch option {
 		case 1:
 			title, description := getNewProjectData()
-			project := app.NewProject(projectId, title, description)
-			Database.AddProject(*project)
+			err := dt.CreateProject(ctx, db_todo.CreateProjectParams{
+				Title: title,
+				Describe: pgtype.Text{
+					String: description,
+					Valid:  true,
+				},
+				CreatedAt: pgtype.Timestamp{
+					Time:  time.Now(),
+					Valid: true,
+				}})
+			if err != nil {
+				log.Fatal(err)
+			}
 
-			projectId++
 			fmt.Println("\nProject created!")
+
 		case 2:
-			title, description, dueDate, idProject := getNewTaskData()
-			task := app.NewTask(taskId, title, description, dueDate, idProject)
-			project, _ := Database.GetProjectById(idProject)
-			project.AddTask(*task)
-
-			taskId++
-			fmt.Println("\nTask created!")
-		case 3:
 			var projectId int
-
 			fmt.Print("Digit the project ID: ")
-			scanner := bufio.NewScanner(os.Stdin)
-			scanner.Scan()
-			projectId, _ = strconv.Atoi(scanner.Text())
-			project, _ := Database.GetProjectById(projectId)
+			fmt.Scanln(&projectId)
+			project, err := dt.GetProject(ctx, int32(projectId))
 
-			project.ShowMenu()
-		case 4:
+			if err != nil {
+				fmt.Println("Error getting project: ", err)
+				break
+			}
+
+			app.NewProject(project).ShowMenu(ctx, dt)
+
+		case 3:
 			fmt.Println("Exit")
 			return
+
 		default:
 			fmt.Println("Invalid option")
 		}
@@ -64,9 +101,8 @@ func main() {
 
 func ShowMenu() {
 	fmt.Println("1. Create a new project")
-	fmt.Println("2. Create a new task")
-	fmt.Println("3. Select a project")
-	fmt.Println("4. Exit")
+	fmt.Println("2. Select a project")
+	fmt.Println("3. Exit")
 	fmt.Print("Choose an option: ")
 }
 
@@ -86,31 +122,16 @@ func getNewProjectData() (string, string) {
 	return title, description
 }
 
-func getNewTaskData() (string, string, time.Time, int) {
-	var title, description, dueDateString string
-	var idProject int
-	scanner := bufio.NewScanner(os.Stdin)
+func executeSchema(conn *pgx.Conn, filename string) error {
+	schema, err := os.ReadFile(filename)
+	if err != nil {
+		return err
+	}
 
-	fmt.Print("Digit the project ID: ")
-	scanner.Scan()
-	idProject, _ = strconv.Atoi(scanner.Text())
+	_, err = conn.Exec(context.Background(), string(schema))
+	if err != nil {
+		return err
+	}
 
-	fmt.Print("Title: ")
-	scanner.Scan()
-	title = scanner.Text()
-
-	fmt.Print("Description: ")
-	scanner.Scan()
-	description = scanner.Text()
-
-	fmt.Print("Due date (YYYY-MM-DD): ")
-	scanner.Scan()
-	dueDateString = scanner.Text()
-	dueDate, _ := parseStringToDate(dueDateString)
-
-	return title, description, dueDate, idProject
-}
-
-func parseStringToDate(dateString string) (time.Time, error) {
-	return (time.Parse("2006-01-02", dateString))
+	return nil
 }
